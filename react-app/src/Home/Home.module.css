@@ -1,0 +1,22 @@
+.input {
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.checkbox {
+    margin-left: 0;
+}
+
+.distancechoice {
+    margin-right: 0;
+}
+
+.chosen {
+    font-weight: 700;
+}
+
+.notchosen {
+    text-decoration-line: underline;
+}
