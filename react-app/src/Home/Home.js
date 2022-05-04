@@ -2,11 +2,37 @@ import React from 'react'
 import '../index.css'
 import styles from './Home.module.css'
 import CardsArray from "../CardsArray/CardsArray"
-import { GetRequestURL, MakeAsteroidsList} from "../api_utils/nasaAPI";
-import { useEffect } from "react";
+import { GetRequestURL, MakeAsteroidsList } from "../api_utils/nasaAPI";
+import { useEffect, useReducer, createContext } from "react";
+import ACTIONS from "../ACTIONS"
+import MODES from "../MODES"
 
 // Создаем контекст для доступа потомков к глобальным пропсам (определены в Home)
-export const Context = React.createContext();
+export const Context = createContext();
+
+function reducer(state, action) {
+    switch (action.type) {
+        case ACTIONS.UPDATE_ASTEROIDS_LIST:
+            return {
+                ...state, asteroids: action.payload
+            }
+        case ACTIONS.SWITCH_DISTANCE_UNITS_MODE:
+            return {
+                ...state, units: action.payload
+            };
+        case ACTIONS.TOGGLE_DANGEROUS_ONLY_MODE:
+            return {
+                ...state, dangerousOnly: action.payload
+            };
+        case ACTIONS.ADD_ASTEROID_TO_CART:
+            console.log("ACTION: ADD ASTEROID TO CART");
+            return {
+                ...state, cartAsteroids: action.payload
+            };
+        default:
+            return new Error("Invalid Action");
+    }
+}
 
 const Home = () => {
 
@@ -17,16 +43,15 @@ const Home = () => {
         asteroids - данные об астероидах
      */
 
-    const [dangerousOnly, setDangerousOnly] = React.useState(false);
+    /* const [dangerousOnly, setDangerousOnly] = React.useState(false);
 
-    const toggleDangerousOnly = () => {
+        const toggleDangerousOnly = () => {
         setDangerousOnly(!dangerousOnly);
     };
 
     const [units, setUnits] = React.useState('km');
 
     const switchUnits = () => {
-        if (units === 'km')
             setUnits('lunar');
         if (units === 'lunar')
             setUnits('km');
@@ -41,33 +66,51 @@ const Home = () => {
         isDangerous:"Loading",
     }]);
 
+     */
+
+    const [state, dispatch] = useReducer(reducer, {asteroids: [], cartAsteroids: [], dangerousOnly: false, units: 'km'});
+
+    const toggleDangerousOnly = (e) => {
+        dispatch({
+            type: ACTIONS.TOGGLE_DANGEROUS_ONLY_MODE,
+            payload: e.target.checked
+        });
+    }
+
+    const switchUnits = () => {
+        dispatch({
+            type: ACTIONS.SWITCH_DISTANCE_UNITS_MODE,
+            payload: (state.units === 'km') ? 'lunar' : 'km'
+        });
+    }
+
     useEffect(()=>{
         fetch(GetRequestURL())
             .then((response)=>response.json()
                 .then((resData)=>{
-                    setAsteroids(MakeAsteroidsList(resData))
+                    dispatch({
+                        type: ACTIONS.UPDATE_ASTEROIDS_LIST,
+                        payload: MakeAsteroidsList(resData)});
                 }))
-    }, [])
-
-    console.log(asteroids);
+    }, []);
 
     return (
     <div>
-        <Context.Provider value={{asteroids, dangerousOnly, units}}>
+        <Context.Provider value={{state: state, dispatch: dispatch, mode: MODES.SEARCH_MODE}}>
             <div className={styles.input}>
                 <div className={styles.checkbox}>
                     <Checkbox
                         label=" Только опасные"
-                        value={dangerousOnly}
+                        value={state.dangerousOnly}
                         onChange={toggleDangerousOnly}
                     />
                 </div>
                 <div className={styles.distancechoice}>
-                    <DistanceChoice choice={units} onClick={switchUnits}/>
+                    <DistanceChoice choice={state.units} onClick={switchUnits}/>
                 </div>
             </div>
             <div>
-                <CardsArray /> };
+                <CardsArray />
             </div>
         </Context.Provider>
     </div>
@@ -85,6 +128,7 @@ const Checkbox = ({ label, value, onChange }) => {
 
 const DistanceChoice = ({ choice, onClick }) => {
     console.log("DistanceChoice: " + choice);
+
     if (choice === 'km')
         return(
             <div>

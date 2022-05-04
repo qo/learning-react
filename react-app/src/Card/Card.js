@@ -3,12 +3,18 @@ import dinoimg from "../assets/dino.svg";
 import asteroidimg from "../assets/asteroid.svg";
 import { useContext } from "react";
 import { Context } from '../Home/Home'
+import ACTIONS from "../ACTIONS"
+import MODES from "../MODES"
 
 const Card = (props) => {
 
     const context = useContext(Context);
 
-    const units = context.units;
+    const dispatch = context.dispatch;
+
+    const units = context.state.units;
+
+    const mode = context.mode;
 
     let unitsAreKm;
     if (units === 'km')
@@ -18,14 +24,16 @@ const Card = (props) => {
 
     const { asteroid } = props;
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        console.log('You clicked submit.');
-    }
-
     let cardstyle;
     if (asteroid.isDangerous) cardstyle = styles.dangerousCard;
     else cardstyle = styles.harmlessCard;
+
+    const AddAsteroidToCart = () => {
+        dispatch({
+            type: ACTIONS.ADD_ASTEROID_TO_CART,
+            payload: asteroid
+        });
+    };
 
     return (
         <div className={cardstyle}>
@@ -48,11 +56,16 @@ const Card = (props) => {
                     <div>Оценка:</div>
                     <div className={styles.grade}>{asteroid.isDangerous ? "опасен" : "не опасен"}</div>
                 </div>
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <button className={styles.submit} type="submit">На уничтожение</button>
-                    </form>
-                </div>
+                {
+                    (mode === MODES.SEARCH_MODE) ?
+                        <div>
+                            <button className={styles.submit} type="submit" onClick={AddAsteroidToCart}>
+                                <div>На уничтожение</div>
+                            </button>
+                        </div>
+                        :
+                        <div></div>
+                }
             </div>
         </div>
     );

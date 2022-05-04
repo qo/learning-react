@@ -5,8 +5,10 @@ export const GetRequestURL = () =>{
     const today = new Date();
 
     // Получаем даты в формате yyyy-mm-dd
-    const startDate = today.getFullYear() + '-' + today.getMonth() + '-' + (today.getDate()-7);
+    const startDate = today.getFullYear() + '-' + today.getMonth() + (today.getDate()-7);
+    console.log("Start Date: " + startDate);
     const endDate = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
+    console.log("End Date: " + endDate);
 
     // Получаем запрос для метода fetch
     return "https://api.nasa.gov/neo/rest/v1/feed?start_date=" + startDate + "&end_date=" + endDate + "&api_key=" + key;
